@@ -1,0 +1,8 @@
+# Gson serializes/deserializes Kotlin data classes by field name.
+-keep class br.com.sharpledger.data.** { *; }
+-keep class br.com.sharpledger.core.SessionState { *; }
+-keep class br.com.sharpledger.core.ApiException { *; }
+
+# Retrofit needs the annotations and generic signatures on API interfaces.
+-keep interface br.com.sharpledger.data.SharpLedgerApi { *; }
+-keepattributes Signature, InnerClasses, EnclosingMethod, *Annotation*
