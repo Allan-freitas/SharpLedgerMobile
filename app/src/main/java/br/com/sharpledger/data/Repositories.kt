@@ -76,6 +76,101 @@ class UsersRepository(private val runner: ApiRunner) {
     }
 }
 
+class ProfileImageRepository(
+    private val runner: ApiRunner,
+    private val session: SessionManager,
+    private val context: Context,
+) {
+    suspend fun upload(uri: Uri): Result<UserProfile> {
+        val name = displayName(uri)
+        val size = displaySize(uri)
+        val extension = name.substringAfterLast('.', "").lowercase()
+
+        if (extension !in ALLOWED_IMAGE_EXTENSIONS) {
+            return Result.failure(
+                ApiException(
+                    localized(
+                        "O arquivo selecionado não é uma imagem válida.",
+                        "The selected file is not a valid image.",
+                    ),
+                ),
+            )
+        }
+
+        if (size <= 0) {
+            return Result.failure(
+                ApiException(
+                    localized("O arquivo está vazio.", "The file is empty."),
+                ),
+            )
+        }
+
+        if (size > MAX_IMAGE_SIZE) {
+            return Result.failure(
+                ApiException(
+                    localized(
+                        "A imagem excede o limite de 5 MB.",
+                        "The image exceeds the 5 MB limit.",
+                    ),
+                ),
+            )
+        }
+
+        val contentType = FileSharing.mimeTypeFor(name).toMediaTypeOrNull()
+        val body = ContentUriRequestBody(context, uri, contentType, size)
+        val part = MultipartBody.Part.createFormData("file", name, body)
+
+        return runner.call { api ->
+            val result = api.uploadProfileImage(part)
+            val current = session.state.value.user ?: UserProfile()
+            val updated = current.copy(profileImageStorageName = result.storageName)
+            session.updateUser(updated)
+            updated
+        }
+    }
+
+    suspend fun download(): Result<File> = runner.call { api ->
+        val body = api.downloadProfileImage()
+        FileSharing.saveToCache(context, "profile", "profile_image", body)
+    }
+
+    private fun displayName(uri: Uri): String {
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            ?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) {
+                        val value = cursor.getString(index)
+                        if (!value.isNullOrBlank()) return value
+                    }
+                }
+            }
+
+        return uri.lastPathSegment?.substringAfterLast('/') ?: "profile.jpg"
+    }
+
+    private fun displaySize(uri: Uri): Long {
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)
+            ?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.SIZE)
+                    if (index >= 0 && !cursor.isNull(index)) {
+                        return cursor.getLong(index)
+                    }
+                }
+            }
+
+        return runCatching {
+            context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length } ?: 0L
+        }.getOrDefault(0L)
+    }
+
+    companion object {
+        const val MAX_IMAGE_SIZE = 5L * 1024L * 1024L
+        private val ALLOWED_IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "webp")
+    }
+}
+
 class CategoryRepository(private val runner: ApiRunner) {
     suspend fun getCategories(includeInactive: Boolean): Result<List<Category>> = runner.call { api ->
         api.getCategories(includeInactive)

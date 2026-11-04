@@ -72,6 +72,7 @@
     <string name="income_breakdown">Receitas por categoria</string>
     <string name="no_transactions_month">Nenhum lançamento neste mês.</string>
     <string name="export_pdf">Exportar PDF</string>
+    <string name="profile_image">Imagem de perfil</string>
     <string name="set_initial_balance">Definir saldo inicial</string>
     <string name="month">Mês</string>
     <string name="previous_month">Mês anterior</string>

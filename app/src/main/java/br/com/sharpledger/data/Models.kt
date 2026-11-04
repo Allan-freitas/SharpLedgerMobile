@@ -30,12 +30,17 @@ data class UserProfile(
     val familyId: String = "",
     val familyName: String = "",
     val role: String = "",
+    val profileImageStorageName: String? = null,
     val permissions: List<String> = emptyList(),
 )
 
 data class AuthResponse(
     val token: String = "",
     val user: UserProfile = UserProfile(),
+)
+
+data class ProfileImageUploadResult(
+    val storageName: String = "",
 )
 
 data class LoginRequest(val email: String, val password: String)

@@ -34,6 +34,14 @@ interface SharpLedgerApi {
     @GET("users/me")
     suspend fun me(): UserProfile
 
+    @Multipart
+    @POST("users/me/profile-image")
+    suspend fun uploadProfileImage(@Part file: MultipartBody.Part): ProfileImageUploadResult
+
+    @Streaming
+    @GET("users/me/profile-image")
+    suspend fun downloadProfileImage(): ResponseBody
+
     @GET("users")
     suspend fun getUsers(): FamilyUsersResponse
 

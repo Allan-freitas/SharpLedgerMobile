@@ -1,9 +1,16 @@
 package br.com.sharpledger.ui.dashboard
 
 import android.app.Activity
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,15 +48,21 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -259,6 +272,39 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
         LightPageBackground
     }
 
+    val scope = rememberCoroutineScope()
+    var uploadingImage by remember { mutableStateOf(false) }
+
+    val profileImage by produceState<ImageBitmap?>(initialValue = null, user.profileImageStorageName) {
+        value = user.profileImageStorageName?.let { storageName ->
+            container.profileImageRepository.download()
+                .getOrNull()
+                ?.let { file ->
+                    BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
+                }
+        }
+    }
+
+    val pickImage = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                uploadingImage = true
+                container.profileImageRepository.upload(uri)
+                    .onSuccess { }
+                    .onFailure {
+                        android.widget.Toast.makeText(
+                            context,
+                            it.message ?: context.getString(R.string.error_generic),
+                            android.widget.Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                uploadingImage = false
+            }
+        }
+    }
+
     DisposableEffect(activity) {
         val window = activity?.window
         val controller = window?.let { WindowCompat.getInsetsController(it, it.decorView) }
@@ -289,6 +335,15 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
             item(key = "header") {
                 DashboardHeader(
                     user = user,
+                    profileImage = profileImage,
+                    uploadingImage = uploadingImage,
+                    onAvatarClick = {
+                        pickImage.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly,
+                            ),
+                        )
+                    },
                     month = viewModel.month,
                     summary = summary,
                     loading = viewModel.state.loading,
@@ -395,6 +450,9 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
 @Composable
 private fun DashboardHeader(
     user: UserProfile,
+    profileImage: ImageBitmap?,
+    uploadingImage: Boolean,
+    onAvatarClick: () -> Unit,
     month: YearMonth,
     summary: MonthlySummary,
     loading: Boolean,
@@ -429,7 +487,12 @@ private fun DashboardHeader(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        UserAvatar(name = user.fullName)
+                        UserAvatar(
+                            name = user.fullName,
+                            image = profileImage,
+                            uploading = uploadingImage,
+                            onClick = onAvatarClick,
+                        )
                         Spacer(Modifier.weight(1f))
                         IconButton(onClick = onRefresh, enabled = !loading) {
                             Icon(
@@ -487,7 +550,12 @@ private fun DashboardHeader(
 }
 
 @Composable
-private fun UserAvatar(name: String) {
+private fun UserAvatar(
+    name: String,
+    image: ImageBitmap?,
+    uploading: Boolean,
+    onClick: () -> Unit,
+) {
     val initials = name.trim()
         .split(Regex("\\s+"))
         .filter { it.isNotBlank() }
@@ -501,15 +569,33 @@ private fun UserAvatar(name: String) {
             .size(42.dp)
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.18f))
-            .border(1.dp, Color.White.copy(alpha = 0.45f), CircleShape),
+            .border(1.dp, Color.White.copy(alpha = 0.45f), CircleShape)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = initials,
-            color = Color.White,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-        )
+        if (uploading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = Color.White,
+            )
+        } else if (image != null) {
+            Image(
+                bitmap = image,
+                contentDescription = stringResource(R.string.profile_image),
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import br.com.sharpledger.data.AuthRepository
 import br.com.sharpledger.data.BudgetRepository
 import br.com.sharpledger.data.CategoryRepository
 import br.com.sharpledger.data.InvestmentRepository
+import br.com.sharpledger.data.ProfileImageRepository
 import br.com.sharpledger.data.ReportRepository
 import br.com.sharpledger.data.TransactionRepository
 import br.com.sharpledger.data.UsersRepository
@@ -19,6 +20,7 @@ class AppContainer(context: Context) {
 
     val authRepository = AuthRepository(runner, session)
     val usersRepository = UsersRepository(runner)
+    val profileImageRepository = ProfileImageRepository(runner, session, appContext)
     val categoryRepository = CategoryRepository(runner)
     val budgetRepository = BudgetRepository(runner)
     val transactionRepository = TransactionRepository(runner)
