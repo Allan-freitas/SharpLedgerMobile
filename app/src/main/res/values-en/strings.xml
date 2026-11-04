@@ -137,6 +137,11 @@
     <string name="invoice_closing">Closes %1$s</string>
     <string name="invoice_total">Invoice total</string>
     <string name="invoice_empty">No invoices yet.</string>
+    <string name="invoice_status_open">Open</string>
+    <string name="invoice_status_closed">Closed</string>
+    <string name="invoice_status_paid">Paid</string>
+    <string name="invoice_pay">Pay invoice</string>
+    <string name="invoice_reopen">Reopen invoice</string>
 
     <string name="investments_title">Investments</string>
     <string name="add_investment">New investment</string>

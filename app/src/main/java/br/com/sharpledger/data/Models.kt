@@ -134,6 +134,9 @@ data class InvoiceSummary(
     val total: BigDecimal = BigDecimal.ZERO,
     val transactionCount: Int = 0,
     val isCurrent: Boolean = false,
+    val status: String = "Open",
+    val paidAtUtc: String? = null,
+    val paidAmount: BigDecimal? = null,
 )
 
 data class InvoiceTransaction(

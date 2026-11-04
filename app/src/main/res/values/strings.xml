@@ -137,6 +137,11 @@
     <string name="invoice_closing">Fecha em %1$s</string>
     <string name="invoice_total">Total da fatura</string>
     <string name="invoice_empty">Nenhuma fatura ainda.</string>
+    <string name="invoice_status_open">Aberta</string>
+    <string name="invoice_status_closed">Fechada</string>
+    <string name="invoice_status_paid">Paga</string>
+    <string name="invoice_pay">Pagar fatura</string>
+    <string name="invoice_reopen">Reabrir fatura</string>
 
     <string name="investments_title">Investimentos</string>
     <string name="add_investment">Novo investimento</string>

@@ -238,6 +238,12 @@ class CostCenterRepository(private val runner: ApiRunner) {
     ): Result<InvoiceDetail> = runner.call { api ->
         api.getCardInvoice(costCenterId, year, month)
     }
+
+    suspend fun payInvoice(costCenterId: String, year: Int, month: Int): Result<Unit> =
+        runner.call { api -> api.payCardInvoice(costCenterId, year, month) }
+
+    suspend fun reopenInvoice(costCenterId: String, year: Int, month: Int): Result<Unit> =
+        runner.call { api -> api.reopenCardInvoice(costCenterId, year, month) }
 }
 
 class BudgetRepository(private val runner: ApiRunner) {

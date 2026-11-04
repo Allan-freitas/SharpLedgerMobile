@@ -91,6 +91,20 @@ interface SharpLedgerApi {
         @Path("month") month: Int,
     ): InvoiceDetail
 
+    @POST("cost-centers/{id}/invoices/{year}/{month}/pay")
+    suspend fun payCardInvoice(
+        @Path("id") costCenterId: String,
+        @Path("year") year: Int,
+        @Path("month") month: Int,
+    )
+
+    @POST("cost-centers/{id}/invoices/{year}/{month}/reopen")
+    suspend fun reopenCardInvoice(
+        @Path("id") costCenterId: String,
+        @Path("year") year: Int,
+        @Path("month") month: Int,
+    )
+
     @GET("budgets/summary")
     suspend fun getMonthlySummary(
         @Query("year") year: Int,

@@ -9,10 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +60,7 @@ fun CardInvoicesScreen(
     var selected by remember(costCenter.id) { mutableStateOf<InvoiceSummary?>(null) }
     var detail by remember(costCenter.id) { mutableStateOf<InvoiceDetail?>(null) }
     var loadingDetail by remember(costCenter.id) { mutableStateOf(false) }
+    var busy by remember(costCenter.id) { mutableStateOf(false) }
 
     fun reload() {
         scope.launch {
@@ -65,6 +70,29 @@ fun CardInvoicesScreen(
                 .onSuccess { invoices = it }
                 .onFailure { error = it.message }
             loading = false
+        }
+    }
+
+    fun changeStatus(target: InvoiceSummary, pay: Boolean) {
+        scope.launch {
+            busy = true
+            error = null
+            val action = if (pay) {
+                repository.payInvoice(costCenter.id, target.year, target.month)
+            } else {
+                repository.reopenInvoice(costCenter.id, target.year, target.month)
+            }
+
+            action
+                .onSuccess {
+                    repository.getInvoices(costCenter.id).onSuccess { invoices = it }
+                    repository.getInvoice(costCenter.id, target.year, target.month)
+                        .onSuccess { detail = it }
+                        .onFailure { error = it.message }
+                }
+                .onFailure { error = it.message }
+
+            busy = false
         }
     }
 
@@ -96,11 +124,14 @@ fun CardInvoicesScreen(
             summary = selected!!,
             detail = detail,
             loading = loadingDetail,
+            busy = busy,
             error = error,
             onBack = {
                 selected = null
                 detail = null
             },
+            onPay = { changeStatus(it, pay = true) },
+            onReopen = { changeStatus(it, pay = false) },
         )
     } else {
         InvoiceListContent(
@@ -164,28 +195,26 @@ private fun InvoiceListContent(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = monthLabel(invoice.month, invoice.year) +
-                                    if (invoice.isCurrent) {
-                                        "  •  ${stringResource(R.string.invoice_current)}"
-                                    } else {
-                                        ""
-                                    },
+                                text = monthLabel(invoice.month, invoice.year),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (invoice.isCurrent) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
-                                fontWeight = if (invoice.isCurrent) FontWeight.SemiBold else null,
+                                fontWeight = FontWeight.SemiBold,
                             )
-                            Text(
-                                text = stringResource(
-                                    R.string.invoice_due,
-                                    Dates.formatIso(invoice.dueDate),
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = statusLabel(invoice.status),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = statusColor(invoice.status),
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "  •  " + stringResource(
+                                        R.string.invoice_due,
+                                        Dates.formatIso(invoice.dueDate),
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                         Text(
                             text = MoneyFormat.format(invoice.total),
@@ -204,10 +233,15 @@ private fun InvoiceDetailContent(
     summary: InvoiceSummary,
     detail: InvoiceDetail?,
     loading: Boolean,
+    busy: Boolean,
     error: String?,
     onBack: () -> Unit,
+    onPay: (InvoiceSummary) -> Unit,
+    onReopen: (InvoiceSummary) -> Unit,
 ) {
-    AppScaffold(title = monthLabel(summary.month, summary.year), onBack = onBack) { padding ->
+    val current = detail?.summary ?: summary
+
+    AppScaffold(title = monthLabel(current.month, current.year), onBack = onBack) { padding ->
         if (loading && detail == null) {
             LoadingBox(modifier = Modifier.padding(padding))
             return@AppScaffold
@@ -223,23 +257,54 @@ private fun InvoiceDetailContent(
             item {
                 SectionCard(title = stringResource(R.string.invoice_total)) {
                     Text(
-                        text = MoneyFormat.format(detail?.summary?.total ?: summary.total),
+                        text = MoneyFormat.format(current.total),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = stringResource(R.string.invoice_due, Dates.formatIso(summary.dueDate)),
+                        text = statusLabel(current.status),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = statusColor(current.status),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.invoice_due, Dates.formatIso(current.dueDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(
                             R.string.invoice_closing,
-                            Dates.formatIso(summary.closingDate),
+                            Dates.formatIso(current.closingDate),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
+                    if (current.status == "Paid") {
+                        OutlinedButton(
+                            onClick = { onReopen(current) },
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.invoice_reopen))
+                        }
+                    } else {
+                        Button(
+                            onClick = { onPay(current) },
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            if (busy) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Text(stringResource(R.string.invoice_pay))
+                            }
+                        }
+                    }
                 }
             }
 
@@ -280,6 +345,20 @@ private fun InvoiceDetailContent(
 }
 
 private fun monthLabel(month: Int, year: Int): String = "%02d/%d".format(month, year)
+
+@Composable
+private fun statusLabel(status: String): String = when (status) {
+    "Paid" -> stringResource(R.string.invoice_status_paid)
+    "Closed" -> stringResource(R.string.invoice_status_closed)
+    else -> stringResource(R.string.invoice_status_open)
+}
+
+@Composable
+private fun statusColor(status: String): Color = when (status) {
+    "Paid" -> Color(0xFF198754)
+    "Closed" -> MaterialTheme.colorScheme.onSurfaceVariant
+    else -> MaterialTheme.colorScheme.primary
+}
 
 @Composable
 private fun billingDaysLabel(costCenter: CostCenter): String {
