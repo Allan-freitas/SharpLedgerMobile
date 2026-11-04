@@ -81,6 +81,16 @@ interface SharpLedgerApi {
     @PATCH("cost-centers/{id}/active")
     suspend fun setCostCenterActive(@Path("id") id: String, @Body request: SetActiveRequest)
 
+    @GET("cost-centers/{id}/invoices")
+    suspend fun getCardInvoices(@Path("id") costCenterId: String): List<InvoiceSummary>
+
+    @GET("cost-centers/{id}/invoices/{year}/{month}")
+    suspend fun getCardInvoice(
+        @Path("id") costCenterId: String,
+        @Path("year") year: Int,
+        @Path("month") month: Int,
+    ): InvoiceDetail
+
     @GET("budgets/summary")
     suspend fun getMonthlySummary(
         @Query("year") year: Int,

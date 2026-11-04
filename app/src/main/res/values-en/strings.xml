@@ -131,6 +131,12 @@
     <string name="closing_day_short">Closes on</string>
     <string name="due_day_short">Due on</string>
     <string name="billing_day_hint">Optional, for credit cards (1 to 31)</string>
+    <string name="invoices_title">Invoices</string>
+    <string name="invoice_current">Current</string>
+    <string name="invoice_due">Due %1$s</string>
+    <string name="invoice_closing">Closes %1$s</string>
+    <string name="invoice_total">Invoice total</string>
+    <string name="invoice_empty">No invoices yet.</string>
 
     <string name="investments_title">Investments</string>
     <string name="add_investment">New investment</string>

@@ -131,6 +131,12 @@
     <string name="closing_day_short">Fecha dia</string>
     <string name="due_day_short">Vence dia</string>
     <string name="billing_day_hint">Opcional, para cartões de crédito (1 a 31)</string>
+    <string name="invoices_title">Faturas</string>
+    <string name="invoice_current">Atual</string>
+    <string name="invoice_due">Vence em %1$s</string>
+    <string name="invoice_closing">Fecha em %1$s</string>
+    <string name="invoice_total">Total da fatura</string>
+    <string name="invoice_empty">Nenhuma fatura ainda.</string>
 
     <string name="investments_title">Investimentos</string>
     <string name="add_investment">Novo investimento</string>

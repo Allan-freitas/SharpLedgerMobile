@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -153,12 +154,22 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
 
     var mode by rememberSaveable { mutableStateOf(CostCentersMode.LIST.name) }
     var editing by remember { mutableStateOf<CostCenter?>(null) }
+    var invoicesFor by remember { mutableStateOf<CostCenter?>(null) }
 
     val currentMode = CostCentersMode.valueOf(mode)
 
     BackHandler(enabled = currentMode == CostCentersMode.FORM) {
         mode = CostCentersMode.LIST.name
         editing = null
+    }
+
+    invoicesFor?.let { card ->
+        CardInvoicesScreen(
+            container = container,
+            costCenter = card,
+            onBack = { invoicesFor = null },
+        )
+        return
     }
 
     if (currentMode == CostCentersMode.FORM) {
@@ -260,6 +271,11 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
+                                }
+                            }
+                            if (costCenter.closingDay != null && costCenter.dueDay != null) {
+                                TextButton(onClick = { invoicesFor = costCenter }) {
+                                    Text(stringResource(R.string.invoices_title))
                                 }
                             }
                             Switch(

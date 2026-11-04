@@ -126,6 +126,29 @@ data class SaveCostCenterRequest(
     val dueDay: Int? = null,
 )
 
+data class InvoiceSummary(
+    val year: Int = 0,
+    val month: Int = 0,
+    val closingDate: String = "",
+    val dueDate: String = "",
+    val total: BigDecimal = BigDecimal.ZERO,
+    val transactionCount: Int = 0,
+    val isCurrent: Boolean = false,
+)
+
+data class InvoiceTransaction(
+    val id: String = "",
+    val description: String = "",
+    val amount: BigDecimal = BigDecimal.ZERO,
+    val date: String = "",
+    val categoryName: String = "",
+)
+
+data class InvoiceDetail(
+    val summary: InvoiceSummary = InvoiceSummary(),
+    val transactions: List<InvoiceTransaction> = emptyList(),
+)
+
 data class CategorySummary(
     val categoryId: String = "",
     val categoryName: String = "",
