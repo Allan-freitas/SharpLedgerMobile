@@ -73,6 +73,8 @@
     <string name="no_transactions_month">Nenhum lançamento neste mês.</string>
     <string name="export_pdf">Exportar PDF</string>
     <string name="profile_image">Imagem de perfil</string>
+    <string name="remove_profile_image_title">Remover foto de perfil</string>
+    <string name="remove_profile_image_message">Deseja remover a sua foto de perfil? Suas iniciais voltarão a ser exibidas.</string>
     <string name="set_initial_balance">Definir saldo inicial</string>
     <string name="month">Mês</string>
     <string name="previous_month">Mês anterior</string>

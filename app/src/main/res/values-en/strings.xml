@@ -73,6 +73,8 @@
     <string name="no_transactions_month">No transactions this month.</string>
     <string name="export_pdf">Export PDF</string>
     <string name="profile_image">Profile image</string>
+    <string name="remove_profile_image_title">Remove profile photo</string>
+    <string name="remove_profile_image_message">Remove your profile photo? Your initials will be shown again.</string>
     <string name="set_initial_balance">Set initial balance</string>
     <string name="month">Month</string>
     <string name="previous_month">Previous month</string>

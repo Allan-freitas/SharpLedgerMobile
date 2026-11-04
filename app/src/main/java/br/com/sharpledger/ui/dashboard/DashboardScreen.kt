@@ -9,7 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -91,6 +91,7 @@ import br.com.sharpledger.data.ReportRepository
 import br.com.sharpledger.data.UserProfile
 import br.com.sharpledger.ui.components.EmptyState
 import br.com.sharpledger.ui.components.ErrorBanner
+import br.com.sharpledger.ui.components.ConfirmDialog
 import br.com.sharpledger.ui.components.LabeledValue
 import br.com.sharpledger.ui.components.MonthSelector
 import br.com.sharpledger.ui.components.SectionCard
@@ -274,6 +275,7 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
 
     val scope = rememberCoroutineScope()
     var uploadingImage by remember { mutableStateOf(false) }
+    var showRemoveDialog by remember { mutableStateOf(false) }
 
     val profileImage by produceState<ImageBitmap?>(initialValue = null, user.profileImageStorageName) {
         value = user.profileImageStorageName?.let { storageName ->
@@ -302,6 +304,23 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
                     }
                 uploadingImage = false
             }
+        }
+    }
+
+    fun removeProfileImage() {
+        scope.launch {
+            uploadingImage = true
+            container.profileImageRepository.remove()
+                .onSuccess { }
+                .onFailure {
+                    android.widget.Toast.makeText(
+                        context,
+                        it.message ?: context.getString(R.string.error_generic),
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                }
+            uploadingImage = false
+            showRemoveDialog = false
         }
     }
 
@@ -343,6 +362,11 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
                                 ActivityResultContracts.PickVisualMedia.ImageOnly,
                             ),
                         )
+                    },
+                    onAvatarLongClick = {
+                        if (user.profileImageStorageName != null) {
+                            showRemoveDialog = true
+                        }
                     },
                     month = viewModel.month,
                     summary = summary,
@@ -445,6 +469,16 @@ fun DashboardScreen(container: AppContainer, user: UserProfile) {
             },
         )
     }
+
+    if (showRemoveDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.remove_profile_image_title),
+            message = stringResource(R.string.remove_profile_image_message),
+            confirmText = stringResource(R.string.action_delete),
+            onConfirm = ::removeProfileImage,
+            onDismiss = { showRemoveDialog = false },
+        )
+    }
 }
 
 @Composable
@@ -453,6 +487,7 @@ private fun DashboardHeader(
     profileImage: ImageBitmap?,
     uploadingImage: Boolean,
     onAvatarClick: () -> Unit,
+    onAvatarLongClick: () -> Unit,
     month: YearMonth,
     summary: MonthlySummary,
     loading: Boolean,
@@ -492,6 +527,7 @@ private fun DashboardHeader(
                             image = profileImage,
                             uploading = uploadingImage,
                             onClick = onAvatarClick,
+                            onLongClick = onAvatarLongClick,
                         )
                         Spacer(Modifier.weight(1f))
                         IconButton(onClick = onRefresh, enabled = !loading) {
@@ -555,6 +591,7 @@ private fun UserAvatar(
     image: ImageBitmap?,
     uploading: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val initials = name.trim()
         .split(Regex("\\s+"))
@@ -570,7 +607,10 @@ private fun UserAvatar(
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.18f))
             .border(1.dp, Color.White.copy(alpha = 0.45f), CircleShape)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (uploading) {

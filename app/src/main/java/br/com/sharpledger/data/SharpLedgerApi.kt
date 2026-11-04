@@ -42,6 +42,9 @@ interface SharpLedgerApi {
     @GET("users/me/profile-image")
     suspend fun downloadProfileImage(): ResponseBody
 
+    @DELETE("users/me/profile-image")
+    suspend fun removeProfileImage()
+
     @GET("users")
     suspend fun getUsers(): FamilyUsersResponse
 

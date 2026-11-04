@@ -134,6 +134,14 @@ class ProfileImageRepository(
         FileSharing.saveToCache(context, "profile", "profile_image", body)
     }
 
+    suspend fun remove(): Result<UserProfile> = runner.call { api ->
+        api.removeProfileImage()
+        val current = session.state.value.user ?: UserProfile()
+        val updated = current.copy(profileImageStorageName = null)
+        session.updateUser(updated)
+        updated
+    }
+
     private fun displayName(uri: Uri): String {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
             ?.use { cursor ->
