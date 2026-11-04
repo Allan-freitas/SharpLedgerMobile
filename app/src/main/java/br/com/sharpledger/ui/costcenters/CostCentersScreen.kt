@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -86,6 +88,8 @@ class CostCentersViewModel(private val repository: CostCenterRepository) : ViewM
         editing: CostCenter?,
         name: String,
         isActive: Boolean,
+        closingDay: Int?,
+        dueDay: Int?,
         onSaved: () -> Unit,
         onError: (String?) -> Unit,
     ) {
@@ -99,11 +103,21 @@ class CostCentersViewModel(private val repository: CostCenterRepository) : ViewM
             return
         }
 
+        if (closingDay != null && closingDay !in 1..31) {
+            onError("O dia de fechamento deve estar entre 1 e 31.")
+            return
+        }
+
+        if (dueDay != null && dueDay !in 1..31) {
+            onError("O dia de vencimento deve estar entre 1 e 31.")
+            return
+        }
+
         viewModelScope.launch {
             val result = if (editing == null) {
-                repository.create(name, isActive)
+                repository.create(name, isActive, closingDay, dueDay)
             } else {
-                repository.update(editing.id, name, isActive)
+                repository.update(editing.id, name, isActive, closingDay, dueDay)
             }
 
             result
@@ -232,9 +246,17 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
                                     text = costCenter.name,
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
-                                if (!costCenter.isActive) {
+                                val closingLabel = stringResource(R.string.closing_day_short)
+                                val dueLabel = stringResource(R.string.due_day_short)
+                                val inactiveLabel = stringResource(R.string.inactive)
+                                val details = listOfNotNull(
+                                    costCenter.closingDay?.let { "$closingLabel $it" },
+                                    costCenter.dueDay?.let { "$dueLabel $it" },
+                                    if (!costCenter.isActive) inactiveLabel else null,
+                                ).joinToString(" • ")
+                                if (details.isNotBlank()) {
                                     Text(
-                                        text = stringResource(R.string.inactive),
+                                        text = details,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -263,6 +285,12 @@ private fun CostCenterForm(
     val key = editing?.id ?: "new"
     var name by rememberSaveable(key) { mutableStateOf(editing?.name ?: "") }
     var active by rememberSaveable(key) { mutableStateOf(editing?.isActive ?: true) }
+    var closingDay by rememberSaveable(key) {
+        mutableStateOf(editing?.closingDay?.toString() ?: "")
+    }
+    var dueDay by rememberSaveable(key) {
+        mutableStateOf(editing?.dueDay?.toString() ?: "")
+    }
 
     AppScaffold(
         title = stringResource(
@@ -288,6 +316,26 @@ private fun CostCenterForm(
                 singleLine = true,
             )
 
+            OutlinedTextField(
+                value = closingDay,
+                onValueChange = { closingDay = it.filter { ch -> ch.isDigit() }.take(2) },
+                label = { Text(stringResource(R.string.closing_day)) },
+                supportingText = { Text(stringResource(R.string.billing_day_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = dueDay,
+                onValueChange = { dueDay = it.filter { ch -> ch.isDigit() }.take(2) },
+                label = { Text(stringResource(R.string.due_day)) },
+                supportingText = { Text(stringResource(R.string.billing_day_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -305,6 +353,8 @@ private fun CostCenterForm(
                         editing = editing,
                         name = name,
                         isActive = active,
+                        closingDay = closingDay.toIntOrNull(),
+                        dueDay = dueDay.toIntOrNull(),
                         onSaved = onSaved,
                         onError = onError,
                     )

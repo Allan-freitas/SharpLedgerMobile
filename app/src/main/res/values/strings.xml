@@ -126,6 +126,11 @@
     <string name="add_cost_center">Novo centro de custo</string>
     <string name="edit_cost_center">Editar centro de custo</string>
     <string name="no_cost_centers">Nenhum centro de custo cadastrado.</string>
+    <string name="closing_day">Dia de fechamento</string>
+    <string name="due_day">Dia de vencimento</string>
+    <string name="closing_day_short">Fecha dia</string>
+    <string name="due_day_short">Vence dia</string>
+    <string name="billing_day_hint">Opcional, para cartões de crédito (1 a 31)</string>
 
     <string name="investments_title">Investimentos</string>
     <string name="add_investment">Novo investimento</string>

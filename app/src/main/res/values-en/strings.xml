@@ -126,6 +126,11 @@
     <string name="add_cost_center">New cost center</string>
     <string name="edit_cost_center">Edit cost center</string>
     <string name="no_cost_centers">No cost centers yet.</string>
+    <string name="closing_day">Closing day</string>
+    <string name="due_day">Due day</string>
+    <string name="closing_day_short">Closes on</string>
+    <string name="due_day_short">Due on</string>
+    <string name="billing_day_hint">Optional, for credit cards (1 to 31)</string>
 
     <string name="investments_title">Investments</string>
     <string name="add_investment">New investment</string>

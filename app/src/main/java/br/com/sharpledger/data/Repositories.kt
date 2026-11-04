@@ -208,13 +208,19 @@ class CostCenterRepository(private val runner: ApiRunner) {
         api.getCostCenters(includeInactive)
     }
 
-    suspend fun create(name: String, isActive: Boolean): Result<String> =
+    suspend fun create(name: String, isActive: Boolean, closingDay: Int?, dueDay: Int?): Result<String> =
         runner.call { api ->
-            api.createCostCenter(SaveCostCenterRequest(name.trim(), isActive))
+            api.createCostCenter(SaveCostCenterRequest(name.trim(), isActive, closingDay, dueDay))
         }
 
-    suspend fun update(id: String, name: String, isActive: Boolean): Result<Unit> = runner.call { api ->
-        api.updateCostCenter(id, SaveCostCenterRequest(name.trim(), isActive))
+    suspend fun update(
+        id: String,
+        name: String,
+        isActive: Boolean,
+        closingDay: Int?,
+        dueDay: Int?,
+    ): Result<Unit> = runner.call { api ->
+        api.updateCostCenter(id, SaveCostCenterRequest(name.trim(), isActive, closingDay, dueDay))
     }
 
     suspend fun setActive(id: String, isActive: Boolean): Result<Unit> = runner.call { api ->

@@ -115,11 +115,15 @@ data class CostCenter(
     val id: String = "",
     val name: String = "",
     val isActive: Boolean = true,
+    val closingDay: Int? = null,
+    val dueDay: Int? = null,
 )
 
 data class SaveCostCenterRequest(
     val name: String,
     val isActive: Boolean,
+    val closingDay: Int? = null,
+    val dueDay: Int? = null,
 )
 
 data class CategorySummary(
