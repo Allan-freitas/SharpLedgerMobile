@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -77,9 +78,10 @@ import br.com.sharpledger.ui.components.ConfirmDialog
 import br.com.sharpledger.ui.components.ErrorBanner
 import br.com.sharpledger.ui.components.LoadingBox
 import br.com.sharpledger.ui.components.SectionCard
+import br.com.sharpledger.ui.costcenters.CostCentersScreen
 import kotlinx.coroutines.launch
 
-private enum class MoreScreenMode { MAIN, USERS, PASSWORD, ABOUT }
+private enum class MoreScreenMode { MAIN, USERS, PASSWORD, ABOUT, COST_CENTERS }
 
 @Composable
 fun MoreScreen(
@@ -102,6 +104,7 @@ fun MoreScreen(
             onOpenUsers = { mode = MoreScreenMode.USERS.name },
             onOpenPassword = { mode = MoreScreenMode.PASSWORD.name },
             onOpenAbout = { mode = MoreScreenMode.ABOUT.name },
+            onOpenCostCenters = { mode = MoreScreenMode.COST_CENTERS.name },
             onLoggedOut = onLoggedOut,
         )
 
@@ -120,6 +123,11 @@ fun MoreScreen(
             container = container,
             onBack = { mode = MoreScreenMode.MAIN.name },
         )
+
+        MoreScreenMode.COST_CENTERS -> CostCentersScreen(
+            container = container,
+            onBack = { mode = MoreScreenMode.MAIN.name },
+        )
     }
 }
 
@@ -130,6 +138,7 @@ private fun MoreMain(
     onOpenUsers: () -> Unit,
     onOpenPassword: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenCostCenters: () -> Unit,
     onLoggedOut: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -166,6 +175,17 @@ private fun MoreMain(
                         title = stringResource(R.string.users_title),
                         subtitle = stringResource(R.string.family),
                         onClick = onOpenUsers,
+                    )
+                }
+            }
+
+            if (user.permissions.contains(Permissions.COST_CENTERS_MANAGE)) {
+                item {
+                    MenuRow(
+                        icon = Icons.Default.CreditCard,
+                        title = stringResource(R.string.cost_centers_title),
+                        subtitle = stringResource(R.string.cost_centers_subtitle),
+                        onClick = onOpenCostCenters,
                     )
                 }
             }
@@ -398,6 +418,7 @@ private fun permissionDisplayName(permission: String): String = when (permission
     Permissions.BUDGETS_MANAGE -> stringResource(R.string.perm_budgets_manage)
     Permissions.INVESTMENTS_MANAGE -> stringResource(R.string.perm_investments_manage)
     Permissions.USERS_MANAGE -> stringResource(R.string.perm_users_manage)
+    Permissions.COST_CENTERS_MANAGE -> stringResource(R.string.perm_cost_centers_manage)
     else -> permission
 }
 

@@ -203,6 +203,25 @@ class CategoryRepository(private val runner: ApiRunner) {
     }
 }
 
+class CostCenterRepository(private val runner: ApiRunner) {
+    suspend fun getCostCenters(includeInactive: Boolean): Result<List<CostCenter>> = runner.call { api ->
+        api.getCostCenters(includeInactive)
+    }
+
+    suspend fun create(name: String, isActive: Boolean): Result<String> =
+        runner.call { api ->
+            api.createCostCenter(SaveCostCenterRequest(name.trim(), isActive))
+        }
+
+    suspend fun update(id: String, name: String, isActive: Boolean): Result<Unit> = runner.call { api ->
+        api.updateCostCenter(id, SaveCostCenterRequest(name.trim(), isActive))
+    }
+
+    suspend fun setActive(id: String, isActive: Boolean): Result<Unit> = runner.call { api ->
+        api.setCostCenterActive(id, SetActiveRequest(isActive))
+    }
+}
+
 class BudgetRepository(private val runner: ApiRunner) {
     suspend fun getSummary(year: Int, month: Int): Result<MonthlySummary> = runner.call { api ->
         api.getMonthlySummary(year, month)

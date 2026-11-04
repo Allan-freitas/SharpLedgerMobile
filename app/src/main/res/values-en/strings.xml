@@ -87,6 +87,8 @@
     <string name="amount">Amount</string>
     <string name="date">Date</string>
     <string name="category">Category</string>
+    <string name="cost_center">Cost center</string>
+    <string name="cost_center_none">None</string>
     <string name="shared_expense">Shared expense</string>
     <string name="split_percentage">Split percentage</string>
     <string name="notes">Notes</string>
@@ -117,6 +119,13 @@
     <string name="deactivate">Deactivate</string>
     <string name="activate">Activate</string>
     <string name="delete_category_confirm">Delete this category?</string>
+
+    <string name="cost_centers_title">Cost centers</string>
+    <string name="cost_centers_subtitle">Cards and accounts</string>
+    <string name="cost_center_name">Name</string>
+    <string name="add_cost_center">New cost center</string>
+    <string name="edit_cost_center">Edit cost center</string>
+    <string name="no_cost_centers">No cost centers yet.</string>
 
     <string name="investments_title">Investments</string>
     <string name="add_investment">New investment</string>
@@ -172,6 +181,7 @@
     <string name="perm_budgets_manage">Create and configure monthly budgets</string>
     <string name="perm_investments_manage">Manage investments, contributions and dividends</string>
     <string name="perm_users_manage">Manage users, invites and permissions</string>
+    <string name="perm_cost_centers_manage">Manage cost centers such as cards and accounts</string>
 
     <string name="account_title">More</string>
     <string name="change_password_title">Change password</string>

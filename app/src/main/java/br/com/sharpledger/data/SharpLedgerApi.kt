@@ -69,6 +69,18 @@ interface SharpLedgerApi {
     @PATCH("categories/{id}/active")
     suspend fun setCategoryActive(@Path("id") id: String, @Body request: SetActiveRequest)
 
+    @GET("cost-centers")
+    suspend fun getCostCenters(@Query("includeInactive") includeInactive: Boolean): List<CostCenter>
+
+    @POST("cost-centers")
+    suspend fun createCostCenter(@Body request: SaveCostCenterRequest): String
+
+    @PUT("cost-centers/{id}")
+    suspend fun updateCostCenter(@Path("id") id: String, @Body request: SaveCostCenterRequest)
+
+    @PATCH("cost-centers/{id}/active")
+    suspend fun setCostCenterActive(@Path("id") id: String, @Body request: SetActiveRequest)
+
     @GET("budgets/summary")
     suspend fun getMonthlySummary(
         @Query("year") year: Int,

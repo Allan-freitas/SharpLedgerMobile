@@ -87,6 +87,8 @@
     <string name="amount">Valor</string>
     <string name="date">Data</string>
     <string name="category">Categoria</string>
+    <string name="cost_center">Centro de custo</string>
+    <string name="cost_center_none">Nenhum</string>
     <string name="shared_expense">Despesa compartilhada</string>
     <string name="split_percentage">Percentual de divisão</string>
     <string name="notes">Observações</string>
@@ -117,6 +119,13 @@
     <string name="deactivate">Desativar</string>
     <string name="activate">Ativar</string>
     <string name="delete_category_confirm">Excluir esta categoria?</string>
+
+    <string name="cost_centers_title">Centros de custo</string>
+    <string name="cost_centers_subtitle">Cartões e contas</string>
+    <string name="cost_center_name">Nome</string>
+    <string name="add_cost_center">Novo centro de custo</string>
+    <string name="edit_cost_center">Editar centro de custo</string>
+    <string name="no_cost_centers">Nenhum centro de custo cadastrado.</string>
 
     <string name="investments_title">Investimentos</string>
     <string name="add_investment">Novo investimento</string>
@@ -172,6 +181,7 @@
     <string name="perm_budgets_manage">Criar e configurar orçamentos mensais</string>
     <string name="perm_investments_manage">Gerenciar investimentos, aportes e proventos</string>
     <string name="perm_users_manage">Gerenciar usuários, convites e permissões</string>
+    <string name="perm_cost_centers_manage">Gerenciar centros de custo, como cartões e contas</string>
 
     <string name="account_title">Mais</string>
     <string name="change_password_title">Alterar senha</string>

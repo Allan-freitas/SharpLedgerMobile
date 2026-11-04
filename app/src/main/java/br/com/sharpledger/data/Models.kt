@@ -13,6 +13,7 @@ object Permissions {
     const val BUDGETS_MANAGE = "Budgets.Manage"
     const val INVESTMENTS_MANAGE = "Investments.Manage"
     const val USERS_MANAGE = "Users.Manage"
+    const val COST_CENTERS_MANAGE = "CostCenters.Manage"
 }
 
 const val TYPE_INCOME = "Income"
@@ -110,6 +111,17 @@ data class SaveCategoryRequest(
 
 data class SetActiveRequest(val isActive: Boolean)
 
+data class CostCenter(
+    val id: String = "",
+    val name: String = "",
+    val isActive: Boolean = true,
+)
+
+data class SaveCostCenterRequest(
+    val name: String,
+    val isActive: Boolean,
+)
+
 data class CategorySummary(
     val categoryId: String = "",
     val categoryName: String = "",
@@ -170,6 +182,8 @@ data class TransactionItem(
     val installmentNumber: Int = 1,
     val installmentCount: Int = 1,
     val hasAttachments: Boolean = false,
+    val costCenterId: String? = null,
+    val costCenterName: String? = null,
 ) {
     val isInstallment: Boolean get() = !installmentPurchaseId.isNullOrBlank() && installmentCount > 1
 }
@@ -197,6 +211,7 @@ data class TransactionEdit(
     val installmentPurchaseId: String? = null,
     val installmentNumber: Int = 1,
     val installmentCount: Int = 1,
+    val costCenterId: String? = null,
 )
 
 data class SaveTransactionRequest(
@@ -208,6 +223,7 @@ data class SaveTransactionRequest(
     val splitPercentage: BigDecimal,
     val notes: String?,
     val installmentCount: Int = 1,
+    val costCenterId: String? = null,
 )
 
 data class TransactionSaveResult(

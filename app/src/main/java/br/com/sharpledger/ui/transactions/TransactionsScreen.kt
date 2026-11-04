@@ -67,6 +67,8 @@ import br.com.sharpledger.core.MoneyFormat
 import br.com.sharpledger.data.AttachmentRepository
 import br.com.sharpledger.data.Category
 import br.com.sharpledger.data.CategoryRepository
+import br.com.sharpledger.data.CostCenter
+import br.com.sharpledger.data.CostCenterRepository
 import br.com.sharpledger.data.ExpenseAttachment
 import br.com.sharpledger.data.MonthTransactions
 import br.com.sharpledger.data.SaveTransactionRequest
@@ -94,12 +96,14 @@ data class TransactionsUiState(
     val error: String? = null,
     val data: MonthTransactions? = null,
     val categories: List<Category> = emptyList(),
+    val costCenters: List<CostCenter> = emptyList(),
     val saving: Boolean = false,
 )
 
 class TransactionsViewModel(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
+    private val costCenterRepository: CostCenterRepository,
 ) : ViewModel() {
     var state by mutableStateOf(TransactionsUiState())
         private set
@@ -126,6 +130,7 @@ class TransactionsViewModel(
 
         viewModelScope.launch {
             val categoriesResult = categoryRepository.getCategories(includeInactive = true)
+            val costCentersResult = costCenterRepository.getCostCenters(includeInactive = true)
             val monthResult = transactionRepository.getMonth(month.year, month.monthValue)
 
             val error = monthResult.exceptionOrNull()?.message
@@ -136,6 +141,7 @@ class TransactionsViewModel(
                 error = error,
                 data = monthResult.getOrNull(),
                 categories = categoriesResult.getOrDefault(emptyList()),
+                costCenters = costCentersResult.getOrDefault(emptyList()),
             )
         }
     }
@@ -200,6 +206,7 @@ class TransactionsViewModel(
                 TransactionsViewModel(
                     container.transactionRepository,
                     container.categoryRepository,
+                    container.costCenterRepository,
                 )
             }
         }
@@ -542,7 +549,13 @@ private fun TransactionCard(item: TransactionItem, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    text = "${item.categoryName} • ${Dates.formatIso(item.date)}",
+                    text = buildString {
+                        append(item.categoryName)
+                        if (!item.costCenterName.isNullOrBlank()) {
+                            append(" • ").append(item.costCenterName)
+                        }
+                        append(" • ").append(Dates.formatIso(item.date))
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -599,6 +612,8 @@ private fun TransactionForm(
     val key = editing?.id ?: "new"
     val categories = viewModel.state.categories
         .filter { editing != null || it.isActive }
+    val costCenters = viewModel.state.costCenters
+        .filter { editing != null || it.isActive }
 
     var description by rememberSaveable(key) { mutableStateOf(editing?.description ?: "") }
     var amount by rememberSaveable(key) {
@@ -606,6 +621,7 @@ private fun TransactionForm(
     }
     var date by rememberSaveable(key) { mutableStateOf(editing?.date ?: Dates.today()) }
     var categoryId by rememberSaveable(key) { mutableStateOf(editing?.categoryId ?: "") }
+    var costCenterId by rememberSaveable(key) { mutableStateOf(editing?.costCenterId ?: "") }
     var isShared by rememberSaveable(key) { mutableStateOf(editing?.isShared ?: false) }
     var split by rememberSaveable(key) {
         mutableStateOf(
@@ -664,6 +680,16 @@ private fun TransactionForm(
                 },
                 options = categories.map { it.id to it.name },
                 onSelect = { categoryId = it },
+            )
+
+            val selectedCostCenter = costCenters.firstOrNull { it.id == costCenterId }
+            SelectField(
+                label = stringResource(R.string.cost_center),
+                selectedText = selectedCostCenter?.name
+                    ?: stringResource(R.string.cost_center_none),
+                options = listOf("" to stringResource(R.string.cost_center_none)) +
+                    costCenters.map { it.id to it.name },
+                onSelect = { costCenterId = it },
             )
 
             if (isExpense) {
@@ -775,6 +801,7 @@ private fun TransactionForm(
                         } else {
                             1
                         },
+                        costCenterId = costCenterId.ifBlank { null },
                     )
 
                     viewModel.save(
