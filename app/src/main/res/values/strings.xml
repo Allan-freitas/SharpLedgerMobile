@@ -127,6 +127,9 @@
     <string name="add_cost_center">Novo centro de custo</string>
     <string name="edit_cost_center">Editar centro de custo</string>
     <string name="no_cost_centers">Nenhum centro de custo cadastrado.</string>
+    <string name="recalculate_competence">Recalcular competência</string>
+    <string name="recalculate_competence_confirm">Reposicionar os lançamentos de cartão existentes no mês de vencimento da fatura? O histórico será ajustado conforme as datas de fechamento e vencimento atuais.</string>
+    <string name="recalculate_competence_done">%1$d lançamento(s) ajustado(s).</string>
     <string name="closing_day">Dia de fechamento</string>
     <string name="due_day">Dia de vencimento</string>
     <string name="closing_day_short">Fecha dia</string>

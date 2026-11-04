@@ -152,6 +152,8 @@ data class InvoiceDetail(
     val transactions: List<InvoiceTransaction> = emptyList(),
 )
 
+data class RecalculateResult(val moved: Int = 0)
+
 data class CategorySummary(
     val categoryId: String = "",
     val categoryName: String = "",

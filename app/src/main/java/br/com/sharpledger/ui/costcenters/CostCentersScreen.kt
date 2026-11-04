@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -18,10 +19,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -31,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,6 +54,7 @@ import br.com.sharpledger.core.AppContainer
 import br.com.sharpledger.data.CostCenter
 import br.com.sharpledger.data.CostCenterRepository
 import br.com.sharpledger.ui.components.AppScaffold
+import br.com.sharpledger.ui.components.ConfirmDialog
 import br.com.sharpledger.ui.components.EmptyState
 import br.com.sharpledger.ui.components.ErrorBanner
 import br.com.sharpledger.ui.components.LoadingBox
@@ -156,6 +162,34 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
     var editing by remember { mutableStateOf<CostCenter?>(null) }
     var invoicesFor by remember { mutableStateOf<CostCenter?>(null) }
 
+    val repository = container.costCenterRepository
+    val scope = rememberCoroutineScope()
+    var recalculating by remember { mutableStateOf(false) }
+    var showRecalcDialog by remember { mutableStateOf(false) }
+
+    fun recalculate() {
+        scope.launch {
+            recalculating = true
+            repository.recalculateCompetence()
+                .onSuccess { moved ->
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.recalculate_competence_done, moved),
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                }
+                .onFailure {
+                    android.widget.Toast.makeText(
+                        context,
+                        it.message ?: context.getString(R.string.error_generic),
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                }
+            recalculating = false
+            showRecalcDialog = false
+        }
+    }
+
     val currentMode = CostCentersMode.valueOf(mode)
 
     BackHandler(enabled = currentMode == CostCentersMode.FORM) {
@@ -198,6 +232,24 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
     AppScaffold(
         title = stringResource(R.string.cost_centers_title),
         onBack = onBack,
+        actions = {
+            IconButton(
+                onClick = { showRecalcDialog = true },
+                enabled = !recalculating,
+            ) {
+                if (recalculating) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.recalculate_competence),
+                    )
+                }
+            }
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 editing = null
@@ -287,6 +339,16 @@ fun CostCentersScreen(container: AppContainer, onBack: () -> Unit) {
                 }
             }
         }
+    }
+
+    if (showRecalcDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.recalculate_competence),
+            message = stringResource(R.string.recalculate_competence_confirm),
+            confirmText = stringResource(R.string.action_confirm),
+            onConfirm = { recalculate() },
+            onDismiss = { showRecalcDialog = false },
+        )
     }
 }
 

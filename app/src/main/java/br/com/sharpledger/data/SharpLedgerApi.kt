@@ -105,6 +105,9 @@ interface SharpLedgerApi {
         @Path("month") month: Int,
     )
 
+    @POST("cost-centers/recalculate-competence")
+    suspend fun recalculateCardCompetence(): RecalculateResult
+
     @GET("budgets/summary")
     suspend fun getMonthlySummary(
         @Query("year") year: Int,

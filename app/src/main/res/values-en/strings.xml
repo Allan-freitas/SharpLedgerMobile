@@ -127,6 +127,9 @@
     <string name="add_cost_center">New cost center</string>
     <string name="edit_cost_center">Edit cost center</string>
     <string name="no_cost_centers">No cost centers yet.</string>
+    <string name="recalculate_competence">Recalculate competence</string>
+    <string name="recalculate_competence_confirm">Reposition existing card transactions to the invoice due month? History will be adjusted according to the current closing and due days.</string>
+    <string name="recalculate_competence_done">%1$d transaction(s) adjusted.</string>
     <string name="closing_day">Closing day</string>
     <string name="due_day">Due day</string>
     <string name="closing_day_short">Closes on</string>
