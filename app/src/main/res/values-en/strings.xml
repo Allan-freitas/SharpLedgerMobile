@@ -89,6 +89,7 @@
     <string name="category">Category</string>
     <string name="cost_center">Cost center</string>
     <string name="cost_center_none">None</string>
+    <string name="card_competence_hint">Purchases on this card are part of its invoice and are accounted in the due month.</string>
     <string name="shared_expense">Shared expense</string>
     <string name="split_percentage">Split percentage</string>
     <string name="notes">Notes</string>

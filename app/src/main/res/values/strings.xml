@@ -89,6 +89,7 @@
     <string name="category">Categoria</string>
     <string name="cost_center">Centro de custo</string>
     <string name="cost_center_none">Nenhum</string>
+    <string name="card_competence_hint">Compras neste cartão entram na fatura e são contabilizadas no mês do vencimento.</string>
     <string name="shared_expense">Despesa compartilhada</string>
     <string name="split_percentage">Percentual de divisão</string>
     <string name="notes">Observações</string>

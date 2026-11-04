@@ -692,6 +692,16 @@ private fun TransactionForm(
                 onSelect = { costCenterId = it },
             )
 
+            if (isExpense && selectedCostCenter?.closingDay != null &&
+                selectedCostCenter.dueDay != null
+            ) {
+                Text(
+                    text = stringResource(R.string.card_competence_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
             if (isExpense) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
